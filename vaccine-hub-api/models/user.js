@@ -1,4 +1,6 @@
+const bcrypt = require("bcrypt")
 const db = require("../db")
+const { BCRYPT_WORK_FACTOR } = require("../config")
 const { BadRequestError, UnauthorizedError } = require("../utils/errors")
 
 class User {
@@ -35,10 +37,10 @@ class User {
         //if it does, throw an error
         const existingUser = await User.fetchUserByEmail(credentials.email)
         if (existingUser) {
-            throw new BadRequestError(`Duplicate email: ${credentials/email}`)
+            throw new BadRequestError(`Duplicate email: ${credentials.email}`)
         }
         //take the users password and hash it
-        //LEAVE THIS OUT FIRST JUST TO OBSERVE
+        const hashedPassword = await bcrypt.hash(credentials.password, BCRYPT_WORK_FACTOR)
         //take the users email and lowercase it
         const lowercasedEmail = credentials.email.toLowerCase()
         //
@@ -58,7 +60,7 @@ class User {
             VALUES ($1, $2, $3, $4, $5)
             RETURNING id, password, first_name, last_name, email, location, date;
         
-        `, [credentials.password, credentials.first_name, credentials.last_name, lowercasedEmail, credentials.location])
+        `, [hashedPassword, credentials.first_name, credentials.last_name, lowercasedEmail, credentials.location])
 
         const user = result.rows[0]
         return user
@@ -68,7 +70,6 @@ class User {
     static async fetchUserByEmail(email){
         if (!email){
             throw new BadRequestError("No email provided")
-
         }
 
         const query = `SELECT * FROM users WHERE email = $1`

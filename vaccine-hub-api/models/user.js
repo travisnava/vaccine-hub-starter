@@ -8,8 +8,8 @@ class User {
     static async makePublicUser(user) {
         return {
             id: user.id,
-            first_name: user.first_name,
-            last_name: user.last_name,
+            firstName: user.first_name,
+            lastName: user.last_name,
             email: user.email,
             location: user.location,
             date: user.date
@@ -46,7 +46,7 @@ class User {
     static async register(credentials){
         //user should submit their email, pw, other info
         //if any fields are missing, throw an error
-        const requiredFields = ["password", "first_name", "last_name", "email", "location"]
+        const requiredFields = ["password", "firstName", "lastName", "email", "location"]
         requiredFields.forEach(field => {
             if (!credentials.hasOwnProperty(field)) {
              throw new BadRequestError(`Missing ${field} in request body.`)
@@ -84,7 +84,7 @@ class User {
             VALUES ($1, $2, $3, $4, $5)
             RETURNING id, password, first_name, last_name, email, location, date;
         
-        `, [hashedPassword, credentials.first_name, credentials.last_name, lowercasedEmail, credentials.location])
+        `, [hashedPassword, credentials.firstName, credentials.lastName, lowercasedEmail, credentials.location])
 
         const user = result.rows[0]
         return User.makePublicUser(user)
